@@ -2,8 +2,8 @@ package com.google.engedu.wordstack;
 
 import android.content.res.AssetManager;
 import android.graphics.Color;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,11 +27,12 @@ import java.util.Stack;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static int WORD_LENGTH = 3;
     public static final int LIGHT_BLUE = Color.rgb(176, 200, 255);
     public static final int LIGHT_GREEN = Color.rgb(200, 255, 200);
-    private  ArrayList<String> words = new ArrayList<>();
+    private static boolean DEBUG_FLAG = false;
+    private static int WORD_LENGTH = 3;
     private static Stack<LetterTile> placedTiles = new Stack<>();
+    private ArrayList<String> words = new ArrayList<>();
     private Random random = new Random();
     private StackedLayout stackedLayout;
     private String word1, word2;
@@ -67,62 +68,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             Toast toast = Toast.makeText(this, "Could not load dictionary", Toast.LENGTH_LONG);
             toast.show();
-        }
-    }
-
-    private class TouchListener implements View.OnTouchListener {
-
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            if (event.getAction() == MotionEvent.ACTION_DOWN && !stackedLayout.empty()) {
-                LetterTile tile = (LetterTile) stackedLayout.peek();
-                tile.moveToViewGroup((ViewGroup) v);
-                if (stackedLayout.empty()) {
-                    TextView messageBox = (TextView) findViewById(R.id.message_box);
-                    messageBox.setText(word1 + " " + word2);
-                }
-                placedTiles.push(tile);
-                return true;
-            }
-            return false;
-        }
-    }
-
-    private class DragListener implements View.OnDragListener {
-
-        public boolean onDrag(View v, DragEvent event) {
-            int action = event.getAction();
-            switch (event.getAction()) {
-                case DragEvent.ACTION_DRAG_STARTED:
-                    v.setBackgroundColor(LIGHT_BLUE);
-                    v.invalidate();
-                    return true;
-                case DragEvent.ACTION_DRAG_ENTERED:
-                    v.setBackgroundColor(LIGHT_GREEN);
-                    v.invalidate();
-                    return true;
-                case DragEvent.ACTION_DRAG_EXITED:
-                    v.setBackgroundColor(LIGHT_BLUE);
-                    v.invalidate();
-                    return true;
-                case DragEvent.ACTION_DRAG_ENDED:
-                    v.setBackgroundColor(Color.WHITE);
-                    v.invalidate();
-                    return true;
-                case DragEvent.ACTION_DROP:
-                    // Dropped, reassign Tile to the target Layout
-                    LetterTile tile = (LetterTile) event.getLocalState();
-                    tile.moveToViewGroup((ViewGroup) v);
-                    if (stackedLayout.empty()) {
-                        TextView messageBox = (TextView) findViewById(R.id.message_box);
-                        messageBox.setText("Answers: "+word1 + " " + word2);
-                        Button undoButton = (Button) findViewById(R.id.button);
-                        undoButton.setEnabled(false);
-                    }
-                    placedTiles.push(tile);
-                    return true;
-            }
-            return false;
         }
     }
 
@@ -171,11 +116,10 @@ public class MainActivity extends AppCompatActivity {
         WORD_LENGTH++;
         words.clear();
         createWords();
-/*        String cheat;
-        cheat = word1;
-        cheat += " ";
-        cheat += word2;
-        messageBox.setText(cheat);*/
+        if (DEBUG_FLAG) {
+            String answers = word1 + " " + word2;
+            messageBox.setText(answers);
+        }
         return true;
     }
 
@@ -185,5 +129,61 @@ public class MainActivity extends AppCompatActivity {
             tile.moveToViewGroup(stackedLayout);
         }
         return true;
+    }
+
+    private class TouchListener implements View.OnTouchListener {
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            if (event.getAction() == MotionEvent.ACTION_DOWN && !stackedLayout.empty()) {
+                LetterTile tile = (LetterTile) stackedLayout.peek();
+                tile.moveToViewGroup((ViewGroup) v);
+                if (stackedLayout.empty()) {
+                    TextView messageBox = (TextView) findViewById(R.id.message_box);
+                    messageBox.setText(word1 + " " + word2);
+                }
+                placedTiles.push(tile);
+                return true;
+            }
+            return false;
+        }
+    }
+
+    private class DragListener implements View.OnDragListener {
+
+        public boolean onDrag(View v, DragEvent event) {
+            int action = event.getAction();
+            switch (event.getAction()) {
+                case DragEvent.ACTION_DRAG_STARTED:
+                    v.setBackgroundColor(LIGHT_BLUE);
+                    v.invalidate();
+                    return true;
+                case DragEvent.ACTION_DRAG_ENTERED:
+                    v.setBackgroundColor(LIGHT_GREEN);
+                    v.invalidate();
+                    return true;
+                case DragEvent.ACTION_DRAG_EXITED:
+                    v.setBackgroundColor(LIGHT_BLUE);
+                    v.invalidate();
+                    return true;
+                case DragEvent.ACTION_DRAG_ENDED:
+                    v.setBackgroundColor(Color.WHITE);
+                    v.invalidate();
+                    return true;
+                case DragEvent.ACTION_DROP:
+                    // Dropped, reassign Tile to the target Layout
+                    LetterTile tile = (LetterTile) event.getLocalState();
+                    tile.moveToViewGroup((ViewGroup) v);
+                    if (stackedLayout.empty()) {
+                        TextView messageBox = (TextView) findViewById(R.id.message_box);
+                        messageBox.setText("Answers: " + word1 + " " + word2);
+                        Button undoButton = (Button) findViewById(R.id.button);
+                        undoButton.setEnabled(false);
+                    }
+                    placedTiles.push(tile);
+                    return true;
+            }
+            return false;
+        }
     }
 }
